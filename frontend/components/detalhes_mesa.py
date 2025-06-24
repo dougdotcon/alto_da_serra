@@ -30,11 +30,19 @@ def controler_pagar_item(page, mesa, id_item):
 
     print(f"ID DA MESA {mesa['id']}/{id_item}")
     
-    # Passando o 'callback' corretamente para abrir o diálogo de adicionar pedido
-    abrir_dialogo_pagar_item(page, mesa["id"],id_item, callback=lambda: reabrir_dialogo_detalles(page, flag))
-   
-    mostrar_detalhes(page,mesa)
-       
+    def atualizar_interface():
+        # Atualiza o total da mesa
+        try:
+            mesas_atualizadas = requests.get("http://127.0.0.1:8000/mesas").json()
+            mesa_atualizada = next(m for m in mesas_atualizadas if m['id'] == mesa['id'])
+            mesa.update(mesa_atualizada)  # Atualiza os dados da mesa atual
+            mostrar_detalhes(mesa, page)  # Atualiza o diálogo
+            page.update()  # Força atualização da página
+        except Exception as e:
+            print(f"Erro ao atualizar interface: {str(e)}")
+    
+    # Passando o callback que atualiza a interface
+    abrir_dialogo_pagar_item(page, mesa["id"], id_item, callback=atualizar_interface)
      
 def controler_excluir_pedido(page,mesa, id_item):
     # Fechar o diálogo de detalhes da mesa
@@ -66,10 +74,10 @@ def mostrar_detalhes(mesa, page):
         ft.Text(f"Cpf/Cnpj: {mesa['cpf_cnpj'] or '---'}", size=10),
         ft.Text(f"Abertura: {datetime.now().strftime('%d/%m/%Y %H:%M')}", size=10),
         ft.IconButton(
-            icon=ft.icons.ADD,
+            icon=ft.Icons.ADD,
             icon_color=ft.Colors.BLUE,
             tooltip="Adicionar Pedido",
-            on_click=lambda e: controler_adcionar_pedido(page, mesa['nome'])
+            on_click=lambda e: controler_adcionar_pedido(page, mesa)
         )
             ], spacing=20),
             ft.Divider(),

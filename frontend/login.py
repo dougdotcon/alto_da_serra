@@ -5,6 +5,7 @@ from painel import painel_view
 def main(page: ft.Page):
     page.title = "SCMP LIM Soluções"
     page.bgcolor = ft.Colors.WHITE
+    page.window_icon_url = "logofornecedor.png"
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
@@ -91,6 +92,9 @@ def main(page: ft.Page):
     page.on_route_change = route_change
     page.go("/login")
 
-#ft.app(target=main, view=ft.WEB_BROWSER, assets_dir="assets")
-ft.app(target=main, view=ft.WEB_BROWSER, assets_dir="assets")
-
+if __name__ == "__main__":
+    ft.app(
+        target=main,
+        view=ft.WEB_BROWSER,
+        assets_dir="assets"
+    )

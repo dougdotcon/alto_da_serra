@@ -40,11 +40,11 @@ def montar_itens_consumidos(page, mesa, controler_excluir_pedido, controler_paga
                 ft.Text(f"R$ {total_item:.2f}", expand=2),
                 ft.Row([
                     ft.IconButton(
-                        icon=ft.icons.DELETE, icon_color=ft.Colors.RED, tooltip="Excluir",
+                        icon=ft.Icons.DELETE, icon_color=ft.Colors.RED, tooltip="Excluir",
                         on_click=lambda e, id=item["id"]: controler_excluir_pedido(page, mesa,item["id"])
                     ),
                     ft.IconButton(
-                        icon=ft.icons.ATTACH_MONEY, icon_color=ft.Colors.GREEN, tooltip="Pagar item",
+                        icon=ft.Icons.ATTACH_MONEY, icon_color=ft.Colors.GREEN, tooltip="Pagar item",
                         on_click=lambda e, id=item["id"]: controler_pagar_item(page, mesa,item["id"])
                     )
                 ], expand=2)
