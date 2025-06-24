@@ -8,7 +8,6 @@ def construir_inputs_abertura():
         label="Novo Status",
         options=[ft.dropdown.Option("Aberta"), ft.dropdown.Option("Reservada")],
         width=200,
-        height=50,
         value="Aberta"
     )
     return mesa_id_input, cliente_input, status_dropdown

@@ -1,6 +1,8 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect("restaurante.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "restaurante.db")
+conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 
 # Inserir configuração do restaurante

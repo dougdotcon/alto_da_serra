@@ -3,7 +3,8 @@ from datetime import datetime
 import time
 import threading
 import requests
-
+from components.painel_controller import inicializar_painel_components
+from components.filtros import criar_filtros
 from components.filtros import criar_filtros
 from components.detalhes_mesa import mostrar_detalhes
 from components.drawer import construir_drawer
@@ -38,8 +39,8 @@ def painel_view(page: ft.Page, nome_usuario: str = "", tipo_usuario: str = "", u
         title=ft.Text("Sistema de Controle de Mesas e Pedidos", size=18, weight=ft.FontWeight.BOLD),
         center_title=True,
         bgcolor=ft.Colors.BLUE_50,
-        leading=ft.IconButton(icon=ft.icons.MENU, on_click=lambda _: (setattr(page, "drawer", drawer), setattr(page.drawer, "open", True), page.update())),
-        actions=[ft.IconButton(icon=ft.icons.SEARCH)]
+        leading=ft.IconButton(icon=ft.Icons.MENU, on_click=lambda _: (setattr(page, "drawer", drawer), setattr(page.drawer, "open", True), page.update())),
+        actions=[ft.IconButton(icon=ft.Icons.SEARCH)]
     )
 
     filtro_e_abertura = construir_filtro_e_abertura(

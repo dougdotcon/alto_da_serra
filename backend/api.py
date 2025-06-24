@@ -3,6 +3,10 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import uvicorn
+import os
+
+# Caminho do banco de dados
+DB_PATH = os.path.join(os.path.dirname(__file__), "restaurante.db")
 
 app = FastAPI()
 
@@ -51,7 +55,7 @@ class AbaterConsumoData(BaseModel):
 @app.post("/abater_consumo")
 def abater_consumo(data: AbaterConsumoData):
     try:
-        conn = sqlite3.connect("restaurante.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Verifica se o item de consumo existe e pertence à mesa
@@ -104,7 +108,7 @@ def abater_consumo(data: AbaterConsumoData):
 @app.get("/produtos")
 def listar_produtos():
     try:
-        conn = sqlite3.connect("restaurante.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         cursor.execute("SELECT id, nome, preco_venda FROM produtos")
@@ -126,7 +130,7 @@ def listar_produtos():
 @app.get("/consumo/{mesa_id}")
 def listar_consumo(mesa_id: str):
     try:
-        conn = sqlite3.connect("restaurante.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -164,7 +168,7 @@ def get_config():
 @app.post("/atualizar_mesa")
 def atualizar_mesa(data: MesaUpdate):
     try:
-        conn = sqlite3.connect("restaurante.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Verifica se a mesa está em uso por outra pessoa
@@ -199,10 +203,10 @@ def atualizar_mesa(data: MesaUpdate):
       
 @app.get("/mesas")
 def listar_mesas():
-    conn = sqlite3.connect("restaurante.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT m.id, m.cliente, m.cpf_cnpj, s.status, m.valor_total
+        SELECT m.id, m.cliente, cpf_cnpj, s.status, m.valor_total
         FROM mesas m
         JOIN status_mesas s ON m.status_id = s.id
     """)
@@ -223,7 +227,7 @@ def listar_mesas():
 @app.post("/login")
 def login(data: LoginData):
     try:
-        conn = sqlite3.connect("restaurante.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -247,7 +251,12 @@ def login(data: LoginData):
         else:
             raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
+    except sqlite3.Error as e:
+        print(f"Erro SQLite: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro de banco de dados: {str(e)}")
     except Exception as e:
+        print(f"Erro geral: {str(e)}")
+        print(f"Tentativa de login com: {data.email} / {data.password}")
         raise HTTPException(status_code=500, detail=f"Erro ao consultar o banco: {str(e)}")
 
 # Roda local

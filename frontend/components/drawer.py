@@ -5,7 +5,7 @@ def construir_drawer(nome_usuario, tipo_usuario, hora_text, page):
     botao_fechar_menu = ft.Row(
         controls=[
             ft.IconButton(
-                icon=ft.icons.CLOSE,
+                icon=ft.Icons.CLOSE,
                 icon_color=ft.Colors.RED,
                 tooltip="Fechar menu",
                 on_click=lambda _: (setattr(page.drawer, "open", False), page.update())
@@ -46,12 +46,12 @@ def construir_drawer(nome_usuario, tipo_usuario, hora_text, page):
                             ft.Text(f"Data: {datetime.now().strftime('%d/%m/%Y')}", size=11),
                             hora_text,
                             ft.Divider(),
-                            ft.ElevatedButton("\U0001F4CB Mesas", on_click=lambda _: None, icon=ft.icons.TABLE_RESTAURANT),
-                            ft.ElevatedButton("\U0001F4E6 Estoque", on_click=lambda _: None, icon=ft.icons.INVENTORY_2),
-                            ft.ElevatedButton("\U0001F468\u200D\U0001F373 Cozinha", on_click=lambda _: None, icon=ft.icons.LUNCH_DINING, height=30),
-                            ft.ElevatedButton("\U0001F4E6 Produtos", on_click=lambda _: None, icon=ft.icons.INVENTORY, height=30),
+                            ft.ElevatedButton("\U0001F4CB Mesas", on_click=lambda _: None, icon=ft.Icons.TABLE_RESTAURANT),
+                            ft.ElevatedButton("\U0001F4E6 Estoque", on_click=lambda _: None, icon=ft.Icons.INVENTORY_2),
+                            ft.ElevatedButton("\U0001F468\U0001F373 Cozinha", on_click=lambda _: None, icon=ft.Icons.LUNCH_DINING, height=30),
+                            ft.ElevatedButton("\U0001F4E6 Produtos", on_click=lambda _: None, icon=ft.Icons.INVENTORY, height=30),
                             ft.Divider(),
-                            ft.ElevatedButton("\U0001F6AA Sair", on_click=lambda _: page.go("/logout"), icon=ft.icons.LOGOUT)
+                            ft.ElevatedButton("\U0001F6AA Sair", on_click=lambda _: page.go("/logout"), icon=ft.Icons.LOGOUT)
                         ],
                         spacing=5,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER

@@ -55,7 +55,7 @@ def construir_abertura_mesa(user_id, page, mesa_id_input, cliente_input, status_
                     ft.Container(
                         content=ft.ElevatedButton(
                             "Abrir",
-                            icon=ft.icons.ADD,
+                            icon=ft.Icons.ADD,
                             on_click=abrir_mesa,
                             height=35,
                             width=100,
