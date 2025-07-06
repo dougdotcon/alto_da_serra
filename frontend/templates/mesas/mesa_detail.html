@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+
+{% block title %}Mesa {{ mesa.nome }} - Alto da Serra{% endblock %}
+
+{% block content %}
+<div class="col-12" data-mesa-id="{{ mesa.id }}">
+    <!-- Mesa Header -->
+    <div class="mesa-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1><i class="bi bi-table me-3"></i>{{ mesa.nome }}</h1>
+                <div class="lead">
+                    {% if mesa.cliente %}
+                        <div class="mb-2"><i class="bi bi-person-fill me-2"></i>Cliente: <strong>{{ mesa.cliente }}</strong></div>
+                    {% endif %}
+                    {% if mesa.cpf_cnpj %}
+                        <div><i class="bi bi-card-text me-2"></i>CPF/CNPJ: <strong>{{ mesa.cpf_cnpj }}</strong></div>
+                    {% endif %}
+                    {% if not mesa.cliente and not mesa.cpf_cnpj %}
+                        <div><i class="bi bi-info-circle me-2"></i>Mesa disponível para atendimento</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="mb-3">
+                    {% if mesa.status|lower == 'aberto' %}
+                        <span class="status-badge status-aberto">
+                            <i class="bi bi-check-circle-fill"></i>{{ mesa.status|title }}
+                        </span>
+                    {% elif mesa.status|lower == 'fechada' %}
+                        <span class="status-badge status-fechada">
+                            <i class="bi bi-x-circle-fill"></i>{{ mesa.status|title }}
+                        </span>
+                    {% elif mesa.status|lower == 'reservada' %}
+                        <span class="status-badge status-reservada">
+                            <i class="bi bi-clock-fill"></i>{{ mesa.status|title }}
+                        </span>
+                    {% else %}
+                        <span class="status-badge bg-secondary">
+                            <i class="bi bi-question-circle-fill"></i>{{ mesa.status|title }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{% url 'mesas:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Consumo da Mesa -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="section-title mb-0">
+                        <i class="bi bi-list-ul"></i>Consumo da Mesa
+                    </h3>
+                    <button class="btn btn-primary" onclick="abrirModalAdicionarPedido()">
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar Pedido
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if consumo %}
+                        <div id="consumo-lista">
+                            {% for item in consumo %}
+                            <div class="consumo-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h5 class="mb-2">{{ item.nome }}</h5>
+                                        <div class="text-muted">
+                                            <i class="bi bi-currency-dollar me-1"></i>
+                                            R$ {{ item.preco|floatformat:2 }} por unidade
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 text-center">
+                                        <div class="badge bg-primary" style="font-size: 0.9rem; padding: 0.5rem 0.75rem;">
+                                            <i class="bi bi-hash me-1"></i>{{ item.quantidade }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="mb-2">
+                                            <div class="fw-bold" style="font-size: 1.2rem; color: var(--success-gradient);">
+                                                R$ {{ item.total|floatformat:2 }}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-end action-buttons">
+                                            <button class="btn btn-warning btn-action"
+                                                    onclick="abrirModalPagarItem({{ item.id }}, '{{ item.nome }}', {{ item.total }})"
+                                                    title="Pagar Item">
+                                                <i class="bi bi-credit-card me-1"></i>Pagar
+                                            </button>
+                                            <button class="btn btn-danger btn-action"
+                                                    onclick="abrirModalExcluirItem({{ item.id }}, '{{ item.nome }}')">
+                                                <i class="bi bi-trash me-1"></i>Excluir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="consumo-vazio" id="consumo-vazio">
+                            <i class="bi bi-inbox display-4"></i>
+                            <p>Nenhum item no consumo desta mesa.</p>
+                            <p class="text-muted">Adicione o primeiro pedido para começar o atendimento.</p>
+                            <!-- O botão será adicionado pelo JavaScript -->
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo e Ações -->
+        <div class="col-lg-4">
+            <!-- Total -->
+            <div class="total-section mb-3">
+                <h4><i class="bi bi-calculator"></i> Total da Mesa</h4>
+                <h2 class="mb-0">R$ {{ total_consumo|floatformat:2 }}</h2>
+            </div>
+
+            <!-- Ações da Mesa -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-gear"></i> Ações da Mesa</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="abrirModalFinalizarConta()">
+                            <i class="bi bi-check-circle"></i> Finalizar Conta
+                        </button>
+                        <button class="btn btn-warning" onclick="abrirModalEditarMesa()">
+                            <i class="bi bi-pencil"></i> Editar Mesa
+                        </button>
+                        <button class="btn btn-info" onclick="imprimirConta()">
+                            <i class="bi bi-printer"></i> Imprimir Conta
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Mesa ID:</strong> {{ mesa.id }}</p>
+                    <p><strong>Status:</strong> {{ mesa.status|title }}</p>
+                    <p><strong>Total de Itens:</strong> {{ consumo|length }}</p>
+                    <p class="mb-0"><strong>Última Atualização:</strong> <span id="ultima-atualizacao"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Pedido -->
+<div class="modal fade" id="modalAdicionarPedido" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAdicionarPedido">
+                    <div class="mb-3">
+                        <label class="form-label">Produto:</label>
+                        <select class="form-select" id="produto-select" required>
+                            <option value="">Selecione um produto...</option>
+                            {% for produto in produtos %}
+                            <option value="{{ produto.id }}" data-preco="{{ produto.preco }}">
+                                {{ produto.nome }} - R$ {{ produto.preco|floatformat:2 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantidade:</label>
+                        <input type="number" class="form-control" id="quantidade-input" min="1" value="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total:</label>
+                        <input type="text" class="form-control" id="total-preview" readonly>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="adicionarPedido()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Finalizar Conta -->
+<div class="modal fade" id="modalFinalizarConta" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Finalizar Conta - {{ mesa.nome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-receipt display-4 text-success"></i>
+                    <h4 class="mt-2">Total da Conta</h4>
+                    <h2 class="text-success">R$ {{ total_consumo|floatformat:2 }}</h2>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Forma de Pagamento:</label>
+                        <select class="form-select" id="forma-pagamento">
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="cartao">Cartão</option>
+                            <option value="pix">PIX</option>
+                            <option value="misto">Misto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Valor Pago:</label>
+                        <input type="number" class="form-control" id="valor-pago"
+                               step="0.01" value="{{ total_consumo|floatformat:2 }}">
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Desconto (%):</label>
+                        <input type="number" class="form-control" id="desconto"
+                               min="0" max="100" value="0" step="0.1">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Troco:</label>
+                        <input type="text" class="form-control" id="troco" readonly>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label">Observações:</label>
+                    <textarea class="form-control" id="observacoes-pagamento" rows="2"
+                              placeholder="Observações sobre o pagamento..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="confirmarFinalizacao()">
+                    <i class="bi bi-check-circle"></i> Confirmar Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Mesa -->
+<div class="modal fade" id="modalEditarMesa" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Mesa - {{ mesa.nome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarMesa">
+                    <div class="mb-3">
+                        <label class="form-label">Status da Mesa:</label>
+                        <select class="form-select" id="status-mesa">
+                            <option value="livre" {% if mesa.status|lower == 'livre' %}selected{% endif %}>Livre</option>
+                            <option value="ocupada" {% if mesa.status|lower == 'ocupada' %}selected{% endif %}>Ocupada</option>
+                            <option value="reservada" {% if mesa.status|lower == 'reservada' %}selected{% endif %}>Reservada</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Cliente:</label>
+                        <input type="text" class="form-control" id="cliente-nome"
+                               value="{{ mesa.cliente|default:'' }}" placeholder="Nome do cliente...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">CPF/CNPJ:</label>
+                        <input type="text" class="form-control" id="cliente-cpf"
+                               value="{{ mesa.cpf_cnpj|default:'' }}" placeholder="CPF ou CNPJ...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarEdicaoMesa()">
+                    <i class="bi bi-save"></i> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/pedidos.js' %}"></script>
+<script>
+    // Atualizar timestamp
+    document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleString('pt-BR');
+
+    // Outras funções específicas da página
+    function abrirModalFinalizarConta() {
+        const modal = new bootstrap.Modal(document.getElementById('modalFinalizarConta'));
+        modal.show();
+        calcularTroco();
+        bindEventosFinalizacao();
+    }
+
+    function bindEventosFinalizacao() {
+        document.getElementById('valor-pago')?.addEventListener('input', calcularTroco);
+        document.getElementById('desconto')?.addEventListener('input', calcularTroco);
+    }
+
+    function calcularTroco() {
+        const totalOriginal = {{ total_consumo|floatformat:2 }};
+        const desconto = parseFloat(document.getElementById('desconto')?.value || 0);
+        const valorPago = parseFloat(document.getElementById('valor-pago')?.value || 0);
+
+        const totalComDesconto = totalOriginal * (1 - desconto / 100);
+        const troco = valorPago - totalComDesconto;
+
+        document.getElementById('troco').value = `R$ ${troco.toFixed(2).replace('.', ',')}`;
+    }
+
+    async function confirmarFinalizacao() {
+        const formaPagamento = document.getElementById('forma-pagamento').value;
+        const valorPago = parseFloat(document.getElementById('valor-pago').value);
+        const desconto = parseFloat(document.getElementById('desconto').value || 0);
+        const observacoes = document.getElementById('observacoes-pagamento').value;
+
+        if (!valorPago || valorPago <= 0) {
+            alert('Por favor, informe o valor pago.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/finalizar-conta/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    mesa_id: '{{ mesa.id }}',
+                    forma_pagamento: formaPagamento,
+                    valor_pago: valorPago,
+                    desconto: desconto,
+                    observacoes: observacoes
+                })
+            });
+
+            if (response.ok) {
+                alert('Conta finalizada com sucesso!');
+                window.location.href = '/dashboard/';
+            } else {
+                const error = await response.json();
+                alert(error.detail || 'Erro ao finalizar conta');
+            }
+        } catch (error) {
+            console.error('Erro ao finalizar conta:', error);
+            alert('Erro ao finalizar conta');
+        }
+    }
+
+    function abrirModalEditarMesa() {
+        const modal = new bootstrap.Modal(document.getElementById('modalEditarMesa'));
+        modal.show();
+    }
+
+    async function salvarEdicaoMesa() {
+        const status = document.getElementById('status-mesa').value;
+        const cliente = document.getElementById('cliente-nome').value;
+        const cpfCnpj = document.getElementById('cliente-cpf').value;
+
+        try {
+            const response = await fetch('/api/atualizar-mesa/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    id: '{{ mesa.id }}',
+                    status: status,
+                    cliente: cliente,
+                    cpf_cnpj: cpfCnpj
+                })
+            });
+
+            if (response.ok) {
+                alert('Mesa atualizada com sucesso!');
+                location.reload();
+            } else {
+                const error = await response.json();
+                alert(error.detail || 'Erro ao atualizar mesa');
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar mesa:', error);
+            alert('Erro ao atualizar mesa');
+        }
+    }
+
+    function imprimirConta() {
+        window.print();
+    }
+
+    function getCsrfToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                return value;
+            }
+        }
+        return '';
+    }
+</script>
+{% endblock %}

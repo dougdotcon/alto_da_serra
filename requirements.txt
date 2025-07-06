@@ -2,3 +2,7 @@ fastapi
 uvicorn
 flet
 requests
+django
+djangorestframework
+django-cors-headers
+pillow

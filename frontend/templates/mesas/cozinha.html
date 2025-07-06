@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Cozinha - Alto da Serra{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title">
+                    <i class="bi bi-egg-fried me-3"></i>Cozinha
+                </h1>
+                <p class="page-subtitle">Gestão de pedidos e preparo em tempo real</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <button class="btn btn-primary" onclick="atualizarPedidos()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+                    </button>
+                    <button class="btn btn-success" onclick="marcarTodosProntos()">
+                        <i class="bi bi-check-all me-2"></i>Marcar Todos Prontos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number text-danger" id="total-pendentes">0</div>
+                    <div class="stat-label">Pedidos Pendentes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number text-warning" id="total-preparo">0</div>
+                    <div class="stat-label">Em Preparo</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number text-success" id="total-prontos">0</div>
+                    <div class="stat-label">Prontos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number text-info" id="tempo-medio">0min</div>
+                    <div class="stat-label">Tempo Médio</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colunas de Pedidos -->
+    <div class="row">
+        <!-- Pedidos Pendentes -->
+        <div class="col-lg-4">
+            <div class="column-header">
+                <i class="bi bi-clock"></i> Pendentes
+            </div>
+            <div id="pedidos-pendentes">
+                <!-- Pedidos pendentes serão carregados aqui -->
+            </div>
+        </div>
+
+        <!-- Pedidos em Preparo -->
+        <div class="col-lg-4">
+            <div class="column-header">
+                <i class="bi bi-fire"></i> Em Preparo
+            </div>
+            <div id="pedidos-preparo">
+                <!-- Pedidos em preparo serão carregados aqui -->
+            </div>
+        </div>
+
+        <!-- Pedidos Prontos -->
+        <div class="col-lg-4">
+            <div class="column-header">
+                <i class="bi bi-check-circle"></i> Prontos
+            </div>
+            <div id="pedidos-prontos">
+                <!-- Pedidos prontos serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-2 text-muted">Carregando pedidos...</p>
+    </div>
+
+    <!-- Mensagem quando não há pedidos -->
+    <div id="sem-pedidos" class="text-center py-5" style="display: none;">
+        <i class="bi bi-cup-hot display-1 text-muted"></i>
+        <h4 class="text-muted mt-3">Nenhum pedido na cozinha</h4>
+        <p class="text-muted">Todos os pedidos foram finalizados.</p>
+    </div>
+</div>
+
+<!-- Modal de Detalhes do Pedido -->
+<div class="modal fade" id="modalDetalhesPedido" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-receipt"></i> Detalhes do Pedido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-body-detalhes">
+                <!-- Detalhes serão carregados aqui -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-warning" onclick="iniciarPreparo()">
+                    <i class="bi bi-play"></i> Iniciar Preparo
+                </button>
+                <button type="button" class="btn btn-success" onclick="marcarPronto()">
+                    <i class="bi bi-check"></i> Marcar Pronto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/cozinha.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Alto da Serra{% endblock %}
+
+
+
+{% block content %}
+<div class="col-12">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title">
+                    <i class="bi bi-grid-3x3-gap me-3"></i>Dashboard de Mesas
+                </h1>
+                <p class="page-subtitle">Gerencie todas as mesas do restaurante em tempo real</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column align-items-md-end gap-3">
+                    <div class="clock" id="clock">
+                        Carregando...
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Atualizar Dados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="bi bi-grid-3x3-gap display-6 me-3"></i>
+                    <div class="display-4" id="total-mesas">{{ mesas|length }}</div>
+                </div>
+                <h5 class="mb-0 fw-bold">Total de Mesas</h5>
+                <small class="opacity-75">Capacidade total</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="bi bi-people-fill display-6 me-3"></i>
+                    <div class="display-4" id="mesas-ocupadas">0</div>
+                </div>
+                <h5 class="mb-0 fw-bold">Mesas Ocupadas</h5>
+                <small class="opacity-75">Em atendimento</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="bi bi-check-circle-fill display-6 me-3"></i>
+                    <div class="display-4" id="mesas-livres">0</div>
+                </div>
+                <h5 class="mb-0 fw-bold">Mesas Livres</h5>
+                <small class="opacity-75">Disponíveis</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <i class="bi bi-currency-dollar display-6 me-3"></i>
+                    <div class="display-4" id="faturamento-total">R$ 0</div>
+                </div>
+                <h5 class="mb-0 fw-bold">Faturamento do Dia</h5>
+                <small class="opacity-75">Receita hoje</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Filtrar por Mesa:</label>
+                <input type="text" class="form-control" id="filtro-mesa" placeholder="Ex: M1, M2...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Filtrar por Cliente:</label>
+                <input type="text" class="form-control" id="filtro-cliente" placeholder="Nome do cliente">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Filtrar por Status:</label>
+                <select class="form-select" id="filtro-status">
+                    <option value="">Todos os status</option>
+                    <option value="livre">Livre</option>
+                    <option value="ocupada">Ocupada</option>
+                    <option value="reservada">Reservada</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100" onclick="aplicarFiltros()">
+                    <i class="bi bi-funnel"></i> Aplicar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mesas Grid -->
+    <div class="row" id="mesas-container">
+        {% for mesa in mesas %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mesa-item" 
+             data-mesa-id="{{ mesa.id }}" 
+             data-cliente="{{ mesa.cliente|lower }}" 
+             data-status="{{ mesa.status|lower }}">
+            <div class="card mesa-card" onclick="abrirDetalheMesa('{{ mesa.id }}')">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ mesa.nome }}</h5>
+                        <span class="status-badge status-{{ mesa.status|lower }}">
+                            {{ mesa.status|title }}
+                        </span>
+                    </div>
+                    
+                    {% if mesa.cliente %}
+                        <p class="card-text">
+                            <i class="bi bi-person"></i> {{ mesa.cliente }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if mesa.cpf_cnpj %}
+                        <p class="card-text">
+                            <i class="bi bi-card-text"></i> {{ mesa.cpf_cnpj }}
+                        </p>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ mesa.id }}</small>
+                        <strong class="text-success">R$ {{ mesa.total|floatformat:2 }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> Nenhuma mesa encontrada.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

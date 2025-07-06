@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestão de Estoque - Alto da Serra{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="bi bi-boxes"></i> Gestão de Estoque
+                    </h1>
+                    <p class="text-muted mb-0">Controle completo do inventário</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="atualizarEstoque()">
+                        <i class="bi bi-arrow-clockwise"></i> Atualizar
+                    </button>
+                    <button class="btn btn-success" onclick="gerarRelatorio()">
+                        <i class="bi bi-file-earmark-excel"></i> Relatório
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="stats-label">Total de Produtos</div>
+                            <div class="stats-number" id="total-produtos">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-boxes stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="stats-label">Produtos Vencidos</div>
+                            <div class="stats-number" id="produtos-vencidos">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-exclamation-triangle stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card h-100" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="stats-label">Próximos ao Vencimento</div>
+                            <div class="stats-number" id="proximos-vencimento">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clock stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card h-100" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="stats-label">Valor Total</div>
+                            <div class="stats-number" id="valor-total">R$ 0,00</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-currency-dollar stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="search-container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="busca-produto" class="form-label">
+                        <i class="bi bi-search"></i> Buscar Produto
+                    </label>
+                    <input type="text" class="form-control" id="busca-produto" 
+                           placeholder="Digite o nome do produto..." onkeyup="filtrarProdutos()">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="filtro-status" class="form-label">
+                        <i class="bi bi-funnel"></i> Status
+                    </label>
+                    <select class="form-select" id="filtro-status" onchange="filtrarProdutos()">
+                        <option value="">Todos</option>
+                        <option value="normal">Normal</option>
+                        <option value="baixo">Estoque Baixo</option>
+                        <option value="vencido">Vencido</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="ordenar-por" class="form-label">
+                        <i class="bi bi-sort-down"></i> Ordenar por
+                    </label>
+                    <select class="form-select" id="ordenar-por" onchange="ordenarProdutos()">
+                        <option value="nome">Nome</option>
+                        <option value="preco">Preço</option>
+                        <option value="validade">Validade</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-outline-secondary w-100" onclick="limparFiltros()">
+                        <i class="bi bi-x-circle"></i> Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Produtos -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabela-estoque">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Código de Barras</th>
+                        <th>Marca</th>
+                        <th>Lote</th>
+                        <th>Validade</th>
+                        <th>Preço Custo</th>
+                        <th>Preço Venda</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-estoque">
+                    <!-- Produtos serão carregados via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-2 text-muted">Carregando produtos...</p>
+    </div>
+
+    <!-- Mensagem quando não há produtos -->
+    <div id="sem-produtos" class="text-center py-5" style="display: none;">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <h4 class="text-muted mt-3">Nenhum produto encontrado</h4>
+        <p class="text-muted">Não há produtos cadastrados no sistema.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/estoque.js' %}"></script>
+{% endblock %}

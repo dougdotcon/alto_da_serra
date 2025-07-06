@@ -1,9 +1,7 @@
 import sqlite3
-import os
 
 # Conexão com o banco (cria o arquivo restaurante.db se não existir)
-DB_PATH = os.path.join(os.path.dirname(__file__), "restaurante.db")
-conn = sqlite3.connect(DB_PATH)
+conn = sqlite3.connect("restaurante.db")
 cursor = conn.cursor()
 
 # Execução das tabelas
@@ -40,10 +38,8 @@ CREATE TABLE IF NOT EXISTS mesas (
     id TEXT PRIMARY KEY,
     status_id INTEGER NOT NULL,
     cliente TEXT,
-    cpf_cnpj TEXT,
     data_abertura DATETIME,
     valor_total REAL DEFAULT 0.0,
-    em_uso_por TEXT DEFAULT 'livre',
     FOREIGN KEY (status_id) REFERENCES status_mesas(id)
 );
 
