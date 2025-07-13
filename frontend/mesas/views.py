@@ -161,6 +161,28 @@ def cozinha_view(request):
 
     return render(request, 'mesas/cozinha.html', context)
 
+def gestao_mesas_view(request):
+    """View para gestão em massa de mesas"""
+    if not request.session.get('autenticado'):
+        return redirect('mesas:login')
+    
+    try:
+        # Busca todas as mesas
+        response = requests.get(f"{settings.API_BASE_URL}/mesas")
+        mesas = response.json() if response.status_code == 200 else []
+        
+        context = {
+            'mesas': mesas,
+            'usuario_nome': request.session.get('usuario_nome'),
+            'usuario_tipo': request.session.get('usuario_tipo')
+        }
+        
+        return render(request, 'mesas/gestao_mesas.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Erro ao carregar gestão de mesas: {str(e)}')
+        return redirect('mesas:dashboard')
+
 # API Views para integração com o frontend
 @csrf_exempt
 def api_mesas(request):

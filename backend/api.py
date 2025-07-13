@@ -30,7 +30,7 @@ class MesaUpdate(BaseModel):
     id: int
     cliente: str
     status: str
-    user_id: str
+    user_id: str = None
     
 class ProdutoData(BaseModel):
     id: int
@@ -109,6 +109,17 @@ def adicionar_pedido(data: NovoConsumo):
                 INSERT INTO consumo (produto_id, quantidade, total, mesa_id)
                 VALUES (?, ?, ?, ?)
             """, (data.produto_id, data.quantidade, total, data.mesa_id))
+
+        # Atualiza o valor_total da mesa
+        cursor.execute("""
+            UPDATE mesas 
+            SET valor_total = (
+                SELECT COALESCE(SUM(total), 0) 
+                FROM consumo 
+                WHERE mesa_id = ?
+            )
+            WHERE id = ?
+        """, (data.mesa_id, data.mesa_id))
 
         conn.commit()
         conn.close()
@@ -365,10 +376,10 @@ def finalizar_conta(data: FinalizarContaData):
         # Limpa o consumo da mesa
         cursor.execute("DELETE FROM consumo WHERE mesa_id = ?", (data.mesa_id,))
 
-        # Atualiza o status da mesa para "Fechada" (status_id = 2)
+        # Atualiza o status da mesa para "Livre" (status_id = 1)
         cursor.execute("""
             UPDATE mesas
-            SET status_id = 2, cliente = NULL, cpf_cnpj = NULL, valor_total = 0.0, em_uso_por = 'livre'
+            SET status_id = 1, cliente = NULL, cpf_cnpj = NULL, valor_total = 0.0, em_uso_por = 'livre'
             WHERE id = ?
         """, (data.mesa_id,))
 
@@ -382,4 +393,4 @@ def finalizar_conta(data: FinalizarContaData):
 
 # Roda local
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("api:app", host="127.0.0.1", port=8001, reload=True)

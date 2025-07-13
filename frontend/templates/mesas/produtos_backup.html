@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+
+{% block title %}Produtos - Alto da Serra{% endblock %}
+
+{% block content %}
+<div class="col-12 fade-in">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="page-title">
+                    <i class="bi bi-box-seam me-3 text-white"></i>Catálogo de Produtos
+                </h1>
+                <p class="page-subtitle">Gerencie e visualize todos os produtos disponíveis</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-light hover-lift" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+                    </button>
+                    <button class="btn btn-success hover-lift" onclick="adicionarProduto()">
+                        <i class="bi bi-plus-circle me-2"></i>Novo Produto
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-box-seam display-6 text-primary"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800">{{ produtos|length }}</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Total de Produtos</h5>
+                <small class="text-gray-500">Disponíveis no catálogo</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-currency-dollar display-6 text-success"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="preco-medio">R$ 0,00</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Preço Médio</h5>
+                <small class="text-gray-500">Valor médio dos produtos</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-graph-up display-6 text-warning"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="produto-mais-caro">R$ 0,00</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Produto Mais Caro</h5>
+                <small class="text-gray-500">Maior valor do catálogo</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-tags display-6 text-info"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="categorias-total">0</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Categorias</h5>
+                <small class="text-gray-500">Diferentes categorias</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-funnel me-2"></i>
+                        <span class="fw-semibold">Busca e Filtros</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="limparFiltros()">
+                        <i class="bi bi-x-circle me-1"></i>Limpar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-search me-1"></i>Buscar Produto
+                            </label>
+                            <input type="text" class="form-control" id="busca-produto" 
+                                   placeholder="Digite o nome do produto...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-tag me-1"></i>Categoria
+                            </label>
+                            <select class="form-select" id="filtro-categoria">
+                                <option value="">Todas as categorias</option>
+                                <!-- Populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-sort-down me-1"></i>Ordenar por
+                            </label>
+                            <select class="form-select" id="ordenacao">
+                                <option value="nome">Nome (A-Z)</option>
+                                <option value="nome-desc">Nome (Z-A)</option>
+                                <option value="preco">Preço (Menor)</option>
+                                <option value="preco-desc">Preço (Maior)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-grid me-1"></i>Visualização
+                            </label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-primary active" id="view-grid" onclick="toggleView('grid')">
+                                    <i class="bi bi-grid-3x3-gap"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="view-list" onclick="toggleView('list')">
+                                    <i class="bi bi-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                    <option value="nome">Nome (A-Z)</option>
+                    <option value="nome-desc">Nome (Z-A)</option>
+                    <option value="preco">Preço (Menor)</option>
+                    <option value="preco-desc">Preço (Maior)</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100" onclick="aplicarFiltros()">
+                    <i class="bi bi-funnel"></i> Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produtos Grid -->
+    <div class="row" id="produtos-container">
+        {% for produto in produtos %}
+        <div class="col-lg-4 col-md-6 produto-item" 
+             data-nome="{{ produto.nome|lower }}" 
+             data-preco="{{ produto.preco }}">
+            <div class="card produto-card">
+                <div class="produto-header text-center">
+                    <i class="bi bi-box-seam display-4 mb-2"></i>
+                    <h5 class="mb-0">{{ produto.nome }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="preco-tag d-inline-block mb-3">
+                        R$ {{ produto.preco|floatformat:2 }}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="adicionarAoPedido({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }})">
+                            <i class="bi bi-plus-circle"></i> Adicionar ao Pedido
+                        </button>
+                        <button class="btn btn-outline-info" onclick="verDetalhes({{ produto.id }})">
+                            <i class="bi bi-info-circle"></i> Ver Detalhes
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer text-center bg-transparent">
+                    <small class="text-muted">ID: {{ produto.id }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> Nenhum produto encontrado.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Adicionar ao Pedido -->
+<div class="modal fade" id="modalAdicionarPedido" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar ao Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-box-seam display-4 text-primary"></i>
+                    <h4 id="produto-nome-modal"></h4>
+                    <p class="text-muted">Preço unitário: <span id="produto-preco-modal"></span></p>
+                </div>
+                
+                <form id="formAdicionarPedido">
+                    <div class="mb-3">
+                        <label class="form-label">Selecionar Mesa:</label>
+                        <select class="form-select" id="mesa-select" required>
+                            <option value="">Selecione uma mesa...</option>
+                            <!-- Mesas serão carregadas via JavaScript -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantidade:</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="alterarQuantidade(-1)">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number" class="form-control text-center" id="quantidade-modal" min="1" value="1">
+                            <button class="btn btn-outline-secondary" type="button" onclick="alterarQuantidade(1)">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total:</label>
+                        <input type="text" class="form-control" id="total-modal" readonly>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarPedido()">
+                    <i class="bi bi-check-circle"></i> Confirmar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let produtoSelecionado = null;
+    
+    // Calcular estatísticas
+    function calcularEstatisticas() {
+        const produtos = document.querySelectorAll('.produto-item');
+        let precos = [];
+        
+        produtos.forEach(produto => {
+            const preco = parseFloat(produto.dataset.preco);
+            precos.push(preco);
+        });
+        
+        if (precos.length > 0) {
+            const precoMedio = precos.reduce((a, b) => a + b, 0) / precos.length;
+            const precoMaisCaro = Math.max(...precos);
+            
+            document.getElementById('preco-medio').textContent = `R$ ${precoMedio.toFixed(2).replace('.', ',')}`;
+            document.getElementById('produto-mais-caro').textContent = `R$ ${precoMaisCaro.toFixed(2).replace('.', ',')}`;
+        }
+    }
+    
+    // Aplicar filtros
+    function aplicarFiltros() {
+        const busca = document.getElementById('busca-produto').value.toLowerCase();
+        const ordenacao = document.getElementById('ordenacao').value;
+        const produtos = Array.from(document.querySelectorAll('.produto-item'));
+        
+        // Filtrar por busca
+        produtos.forEach(produto => {
+            const nome = produto.dataset.nome;
+            produto.style.display = nome.includes(busca) ? 'block' : 'none';
+        });
+        
+        // Ordenar
+        const produtosVisiveis = produtos.filter(p => p.style.display !== 'none');
+        produtosVisiveis.sort((a, b) => {
+            switch(ordenacao) {
+                case 'nome':
+                    return a.dataset.nome.localeCompare(b.dataset.nome);
+                case 'nome-desc':
+                    return b.dataset.nome.localeCompare(a.dataset.nome);
+                case 'preco':
+                    return parseFloat(a.dataset.preco) - parseFloat(b.dataset.preco);
+                case 'preco-desc':
+                    return parseFloat(b.dataset.preco) - parseFloat(a.dataset.preco);
+                default:
+                    return 0;
+            }
+        });
+        
+        // Reordenar no DOM
+        const container = document.getElementById('produtos-container');
+        produtosVisiveis.forEach(produto => container.appendChild(produto));
+    }
+    
+    // Adicionar ao pedido
+    function adicionarAoPedido(id, nome, preco) {
+        produtoSelecionado = { id, nome, preco };
+        document.getElementById('produto-nome-modal').textContent = nome;
+        document.getElementById('produto-preco-modal').textContent = `R$ ${preco.toFixed(2).replace('.', ',')}`;
+        
+        calcularTotalModal();
+        carregarMesas();
+        
+        new bootstrap.Modal(document.getElementById('modalAdicionarPedido')).show();
+    }
+    
+    // Alterar quantidade
+    function alterarQuantidade(delta) {
+        const input = document.getElementById('quantidade-modal');
+        const novaQuantidade = Math.max(1, parseInt(input.value) + delta);
+        input.value = novaQuantidade;
+        calcularTotalModal();
+    }
+    
+    // Calcular total do modal
+    function calcularTotalModal() {
+        const quantidade = parseInt(document.getElementById('quantidade-modal').value) || 1;
+        const preco = produtoSelecionado ? produtoSelecionado.preco : 0;
+        const total = preco * quantidade;
+        
+        document.getElementById('total-modal').value = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+    
+    // Carregar mesas (simulado)
+    function carregarMesas() {
+        const select = document.getElementById('mesa-select');
+        select.innerHTML = '<option value="">Selecione uma mesa...</option>';
+        
+        // Aqui você faria uma chamada AJAX para buscar as mesas
+        for (let i = 1; i <= 30; i++) {
+            const option = document.createElement('option');
+            option.value = `M${i}`;
+            option.textContent = `Mesa ${i}`;
+            select.appendChild(option);
+        }
+    }
+    
+    // Confirmar pedido
+    function confirmarPedido() {
+        const mesaId = document.getElementById('mesa-select').value;
+        const quantidade = parseInt(document.getElementById('quantidade-modal').value);
+        
+        if (!mesaId || !quantidade || !produtoSelecionado) {
+            alert('Por favor, preencha todos os campos.');
+            return;
+        }
+        
+        console.log('Confirmar pedido:', {
+            produtoId: produtoSelecionado.id,
+            mesaId: mesaId,
+            quantidade: quantidade
+        });
+        
+        // Aqui você faria a chamada AJAX para adicionar o pedido
+        alert('Pedido adicionado com sucesso!');
+        bootstrap.Modal.getInstance(document.getElementById('modalAdicionarPedido')).hide();
+    }
+    
+    // Ver detalhes
+    function verDetalhes(id) {
+        alert(`Ver detalhes do produto ID: ${id}`);
+        // Implementar modal de detalhes ou redirecionar
+    }
+    
+    // Atualizar dados
+    function refreshData() {
+        location.reload();
+    }
+    
+    // Event listeners
+    document.getElementById('busca-produto').addEventListener('input', aplicarFiltros);
+    document.getElementById('ordenacao').addEventListener('change', aplicarFiltros);
+    document.getElementById('quantidade-modal').addEventListener('input', calcularTotalModal);
+    
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        calcularEstatisticas();
+    });
+</script>
+{% endblock %}

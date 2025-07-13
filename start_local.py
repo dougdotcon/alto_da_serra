@@ -9,8 +9,8 @@ BACKEND_DIR = os.path.join(os.getcwd(), 'backend')
 FRONTEND_DIR = os.path.join(os.getcwd(), 'frontend')
 
 # Comandos
-BACKEND_CMD = [sys.executable, '-m', 'uvicorn', 'api:app', '--reload', '--host', '127.0.0.1', '--port', '8000']
-FRONTEND_CMD = [sys.executable, 'manage.py', 'runserver', '127.0.0.1:8080']
+BACKEND_CMD = [sys.executable, '-m', 'uvicorn', 'api:app', '--reload', '--host', '127.0.0.1', '--port', '8001']
+FRONTEND_CMD = [sys.executable, 'manage.py', 'runserver', '127.0.0.1:8000']
 
 def main():
     print('🚀 Iniciando Alto da Serra - Sistema de Restaurante')
@@ -19,22 +19,22 @@ def main():
     # Iniciar backend
     print('📡 Iniciando backend FastAPI...')
     backend_proc = subprocess.Popen(BACKEND_CMD, cwd=BACKEND_DIR)
-    print('✅ Backend iniciado em http://127.0.0.1:8000')
+    print('✅ Backend iniciado em http://127.0.0.1:8001')
     time.sleep(3)  # Delay para garantir que o backend suba antes do frontend
 
     # Iniciar frontend Django
     print('🌐 Iniciando frontend Django...')
     frontend_proc = subprocess.Popen(FRONTEND_CMD, cwd=FRONTEND_DIR)
-    print('✅ Frontend Django iniciado em http://127.0.0.1:8080')
+    print('✅ Frontend Django iniciado em http://127.0.0.1:8000')
 
     # Aguardar um pouco e abrir o navegador
     time.sleep(3)
     print('🌍 Abrindo navegador...')
-    webbrowser.open('http://127.0.0.1:8080')
+    webbrowser.open('http://127.0.0.1:8000')
 
     print('\n' + '=' * 50)
     print('🎉 Sistema iniciado com sucesso!')
-    print('📋 Acesse: http://127.0.0.1:8080')
+    print('📋 Acesse: http://127.0.0.1:8000')
     print('🔑 Login: adm / 123 ou a / a')
     print('⚠️  Pressione Ctrl+C para encerrar')
     print('=' * 50)

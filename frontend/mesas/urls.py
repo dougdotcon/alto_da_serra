@@ -11,6 +11,7 @@ urlpatterns = [
     path('produtos/', views.produtos_view, name='produtos'),
     path('estoque/', views.estoque_view, name='estoque'),
     path('cozinha/', views.cozinha_view, name='cozinha'),
+    path('gestao-mesas/', views.gestao_mesas_view, name='gestao_mesas'),
     path('api/mesas/', views.api_mesas, name='api_mesas'),
     path('api/consumo/<str:mesa_id>/', views.api_consumo, name='api_consumo'),
     path('api/produtos/', views.api_produtos, name='api_produtos'),

@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão de Mesas{% endblock %}
+
+{% block content %}
+<div class="col-12 fade-in">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="page-title">
+                    <i class="bi bi-gear-fill me-3 text-white"></i>Gestão de Mesas
+                </h1>
+                <p class="page-subtitle">Controle avançado de status e operações das mesas</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'mesas:dashboard' %}" class="btn btn-light hover-lift">
+                        <i class="bi bi-arrow-left me-2"></i>Dashboard
+                    </a>
+                    <button class="btn btn-success hover-lift" onclick="salvarTodasMesas()">
+                        <i class="bi bi-save me-2"></i>Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-check-circle display-6 text-success"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="mesas-livres-count">0</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Mesas Livres</h5>
+                <small class="text-gray-500">Disponíveis para uso</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-people display-6 text-warning"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="mesas-abertas-count">0</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Mesas Abertas</h5>
+                <small class="text-gray-500">Em atendimento</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-receipt display-6 text-danger"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="mesas-fechadas-count">0</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Mesas Fechadas</h5>
+                <small class="text-gray-500">Aguardando pagamento</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card text-center hover-lift">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-clock display-6 text-primary"></i>
+                    </div>
+                    <div class="stat-number display-4 fw-bold text-gray-800" id="mesas-reservadas-count">0</div>
+                </div>
+                <h5 class="mb-1 fw-bold text-gray-700">Mesas Reservadas</h5>
+                <small class="text-gray-500">Com reserva ativa</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Tools -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-tools me-2"></i>
+                        <span class="fw-semibold">Ferramentas de Gestão</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="atualizarEstatisticas()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-funnel me-1"></i>Filtrar por Status
+                            </label>
+                            <select class="form-select" id="filtro-status" onchange="filtrarMesas()">
+                                <option value="">Todos os status</option>
+                                <option value="livre">🟢 Livre</option>
+                                <option value="aberto">🟡 Aberto</option>
+                                <option value="fechada">🔴 Fechada</option>
+                                <option value="reservada">🔵 Reservada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-arrow-repeat me-1"></i>Alterar Status em Massa
+                            </label>
+                            <div class="input-group">
+                                <select class="form-select" id="status-massa">
+                                    <option value="">Selecione um status</option>
+                                    <option value="livre">🟢 Livre</option>
+                                    <option value="aberto">🟡 Aberto</option>
+                                    <option value="fechada">🔴 Fechada</option>
+                                    <option value="reservada">🔵 Reservada</option>
+                                </select>
+                                <button class="btn btn-warning" type="button" onclick="alterarStatusMassa()">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Aplicar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-check2-square me-1"></i>Seleção
+                            </label>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary flex-fill" onclick="selecionarTodas()">
+                                    <i class="bi bi-check-all me-1"></i>Todas
+                                </button>
+                                <button class="btn btn-outline-secondary flex-fill" onclick="desselecionarTodas()">
+                                    <i class="bi bi-x me-1"></i>Nenhuma
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-gear me-1"></i>Ações
+                            </label>
+                            <button class="btn btn-danger w-100" onclick="resetarTodasMesas()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                            <label class="form-label">Selecionar Mesas:</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="selecionarTodas()">
+                                    <i class="bi bi-check-all"></i> Todas
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="deselecionarTodas()">
+                                    <i class="bi bi-x-square"></i> Nenhuma
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Mesas -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th>Mesa</th>
+                                    <th>Cliente</th>
+                                    <th>Status Atual</th>
+                                    <th>Novo Status</th>
+                                    <th>Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-mesas">
+                                {% for mesa in mesas %}
+                                <tr class="mesa-row" 
+                                    data-mesa-id="{{ mesa.id }}"
+                                    data-status="{{ mesa.status|lower }}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input mesa-checkbox" value="{{ mesa.id }}">
+                                    </td>
+                                    <td>
+                                        <strong>{{ mesa.nome }}</strong>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" 
+                                               id="cliente-{{ mesa.id }}" 
+                                               value="{{ mesa.cliente|default:'' }}"
+                                               placeholder="Nome do cliente">
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ mesa.status|lower }}">
+                                            {{ mesa.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm status-select" 
+                                                id="status-{{ mesa.id }}" 
+                                                data-mesa-id="{{ mesa.id }}">
+                                            <option value="livre" {% if mesa.status|lower == 'livre' %}selected{% endif %}>Livre</option>
+                                            <option value="aberto" {% if mesa.status|lower == 'aberto' %}selected{% endif %}>Aberto</option>
+                                            <option value="fechada" {% if mesa.status|lower == 'fechada' %}selected{% endif %}>Fechada</option>
+                                            <option value="reservada" {% if mesa.status|lower == 'reservada' %}selected{% endif %}>Reservada</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">R$ {{ mesa.total|floatformat:2 }}</span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                onclick="salvarMesa('{{ mesa.id }}')"
+                                                title="Salvar alterações desta mesa">
+                                            <i class="bi bi-save"></i>
+                                        </button>                        <a href="{% url 'mesas:mesa_detail' mesa.id %}" 
+                           class="btn btn-sm btn-outline-secondary"
+                           title="Ver detalhes da mesa">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Função para filtrar mesas por status
+function filtrarMesas() {
+    const filtro = document.getElementById('filtro-status').value.toLowerCase();
+    const rows = document.querySelectorAll('.mesa-row');
+    
+    rows.forEach(row => {
+        const status = row.getAttribute('data-status');
+        if (filtro === '' || status === filtro) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Função para selecionar todas as mesas
+function selecionarTodas() {
+    const checkboxes = document.querySelectorAll('.mesa-checkbox');
+    checkboxes.forEach(checkbox => {
+        const row = checkbox.closest('.mesa-row');
+        if (row.style.display !== 'none') {
+            checkbox.checked = true;
+        }
+    });
+    updateSelectAll();
+}
+
+// Função para desselecionar todas as mesas
+function deselecionarTodas() {
+    const checkboxes = document.querySelectorAll('.mesa-checkbox');
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+    updateSelectAll();
+}
+
+// Função para alternar seleção de todas
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.mesa-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        const row = checkbox.closest('.mesa-row');
+        if (row.style.display !== 'none') {
+            checkbox.checked = selectAll.checked;
+        }
+    });
+}
+
+// Atualizar estado do checkbox "Selecionar Todas"
+function updateSelectAll() {
+    const checkboxes = document.querySelectorAll('.mesa-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    const visibleCheckboxes = Array.from(checkboxes).filter(cb => 
+        cb.closest('.mesa-row').style.display !== 'none'
+    );
+    const checkedVisible = visibleCheckboxes.filter(cb => cb.checked);
+    
+    selectAll.checked = visibleCheckboxes.length > 0 && checkedVisible.length === visibleCheckboxes.length;
+    selectAll.indeterminate = checkedVisible.length > 0 && checkedVisible.length < visibleCheckboxes.length;
+}
+
+// Adicionar listener para atualizar selectAll
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.mesa-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAll);
+    });
+});
+
+// Função para alterar status em massa
+function alterarStatusMassa() {
+    const novoStatus = document.getElementById('status-massa').value;
+    if (!novoStatus) {
+        alert('Selecione um status para aplicar em massa');
+        return;
+    }
+    
+    const checkboxes = document.querySelectorAll('.mesa-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert('Selecione pelo menos uma mesa');
+        return;
+    }
+    
+    if (confirm(`Alterar o status de ${checkboxes.length} mesa(s) para "${novoStatus.toUpperCase()}"?`)) {
+        checkboxes.forEach(checkbox => {
+            const mesaId = checkbox.value;
+            const statusSelect = document.getElementById(`status-${mesaId}`);
+            if (statusSelect) {
+                statusSelect.value = novoStatus;
+            }
+        });
+    }
+}
+
+// Função para salvar uma mesa específica
+async function salvarMesa(mesaId) {
+    try {
+        const cliente = document.getElementById(`cliente-${mesaId}`).value;
+        const status = document.getElementById(`status-${mesaId}`).value;
+        
+        const requestData = {
+            id: parseInt(mesaId.replace('M', '')),
+            cliente: cliente,
+            status: status
+        };
+
+        const response = await fetch('/api/editar-mesa/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if (response.ok) {
+            // Atualizar o badge de status atual
+            const statusBadge = document.querySelector(`[data-mesa-id="${mesaId}"] .status-badge`);
+            if (statusBadge) {
+                statusBadge.className = `status-badge status-${status}`;
+                statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+            
+            // Atualizar o data-status da linha
+            const row = document.querySelector(`[data-mesa-id="${mesaId}"]`);
+            if (row) {
+                row.setAttribute('data-status', status);
+            }
+            
+            // Mostrar feedback
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i>';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-success');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
+            }, 2000);
+            
+        } else {
+            const error = await response.json();
+            alert(`Erro ao salvar mesa ${mesaId}: ${error.detail || 'Erro desconhecido'}`);
+        }
+    } catch (error) {
+        console.error('Erro ao salvar mesa:', error);
+        alert(`Erro ao salvar mesa ${mesaId}`);
+    }
+}
+
+// Função para salvar todas as mesas selecionadas
+async function salvarTodasMesas() {
+    const checkboxes = document.querySelectorAll('.mesa-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert('Selecione pelo menos uma mesa para salvar');
+        return;
+    }
+    
+    if (!confirm(`Salvar alterações de ${checkboxes.length} mesa(s)?`)) {
+        return;
+    }
+    
+    let sucessos = 0;
+    let erros = 0;
+    
+    for (const checkbox of checkboxes) {
+        try {
+            const mesaId = checkbox.value;
+            await salvarMesa(mesaId);
+            sucessos++;
+        } catch (error) {
+            erros++;
+        }
+    }
+    
+    alert(`Operação concluída: ${sucessos} mesa(s) salva(s) com sucesso, ${erros} erro(s)`);
+    
+    if (sucessos > 0) {
+        // Recarregar a página para mostrar as alterações
+        window.location.reload();
+    }
+}
+
+// Função para obter o token CSRF
+function getCsrfToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+    return '';
+}
+</script>
+{% endblock %}
