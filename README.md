@@ -1,75 +1,75 @@
-# Sistema de Gestão para Restaurante - Alto da Serra
+# Alto da Serra - Restaurant Management System
 
-Este é um sistema de gestão de desktop para o restaurante "Alto da Serra", projetado para otimizar o controle de mesas, pedidos e pagamentos.
+A desktop management system tailored for the 'Alto da Serra' restaurant, designed to streamline table tracking, order management, and payment processing.
 
-## ✨ Funcionalidades
+## ✨ Features
 
-*   Gestão de Mesas: Abertura, fechamento e visualização do status de todas as mesas.
-*   Lançamento de Pedidos: Adição de itens de consumo para cada mesa.
-*   Controle de Consumo: Visualização detalhada dos itens consumidos por mesa.
-*   Pagamento de Itens: Funcionalidade para pagamentos parciais ou totais.
-*   Interface Intuitiva: Um painel de controle claro para uma operação eficiente.
+*   **Table Management:** Open, close, and monitor the status of all tables in real-time.
+*   **Order Processing:** Easily add consumption items to specific tables.
+*   **Consumption Tracking:** View detailed logs of items consumed per table.
+*   **Payment Handling:** Support for partial or full bill settlements.
+*   **Intuitive Interface:** A clean dashboard designed for efficient daily operations.
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Technology Stack
 
-*   **Frontend:** [Flet](https://flet.dev/) - Framework para criação de aplicações multi-plataforma em Python.
-*   **Backend:** [FastAPI](https://fastapi.tiangolo.com/) - Framework web de alta performance para construção de APIs com Python.
-*   **Servidor:** [Uvicorn](https://www.uvicorn.org/) - Servidor ASGI para rodar a API FastAPI.
-*   **Banco de Dados:** SQLite - Um arquivo de banco de dados (`restaurante.db`) é utilizado para armazenar os dados.
+*   **Frontend:** [Flet](https://flet.dev/) - Framework for building multi-platform applications in Python.
+*   **Backend:** [FastAPI](https://fastapi.tiangolo.com/) - High-performance web framework for building APIs with Python.
+*   **Server:** [Uvicorn](https://www.uvicorn.org/) - ASGI server used to run the FastAPI application.
+*   **Database:** SQLite - A local file-based database (`restaurante.db`) is used to store all persistent data.
 
-## 📂 Estrutura do Projeto
+## 📂 Project Structure
 
-```
+
 alto_da_serra/
 ├── backend/
-│   ├── api.py             # Lógica da API (FastAPI)
-│   ├── restaurante.db     # Banco de dados SQLite
+│   ├── api.py             # FastAPI logic and endpoints
+│   ├── restaurante.db     # SQLite database file
 │   └── ...
 ├── frontend/
-│   ├── login.py           # Tela de Login da aplicação
-│   ├── painel.py          # Painel principal após o login
-│   ├── components/        # Componentes da interface (Flet)
+│   ├── login.py           # Login screen
+│   ├── painel.py          # Main dashboard after login
+│   ├── components/        # UI components (Flet)
 │   └── ...
-├── requirements.txt       # Dependências do projeto
-├── start_local.py         # Script para iniciar a aplicação localmente
+├── requirements.txt       # Project dependencies
+├── start_local.py         # Script to start the application locally
 └── README.md
-```
 
-## 🚀 Como Começar
 
-Siga as instruções abaixo para configurar e executar o projeto em seu ambiente local.
+## 🚀 Getting Started
 
-### Pré-requisitos
+Follow these instructions to set up and run the project on your local machine.
+
+### Prerequisites
 
 *   [Python 3.8+](https://www.python.org/downloads/)
 
-### Instalação
+### Installation
 
-1.  Clone o repositório para a sua máquina local.
-2.  Navegue até o diretório raiz do projeto.
-3.  Crie e ative um ambiente virtual (recomendado):
-    ```bash
+1.  Clone the repository to your local machine.
+2.  Navigate to the root directory of the project.
+3.  Create and activate a virtual environment (recommended):
+    bash
     python -m venv venv
-    source venv/bin/activate  # No Windows, use `venv\Scripts\activate`
-    ```
-4.  Instale as dependências necessárias:
-    ```bash
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    
+4.  Install the required dependencies:
+    bash
     pip install -r requirements.txt
-    ```
+    
 
-### Executando a Aplicação
+### Running the Application
 
-Para iniciar o backend e o frontend simultaneamente, execute o script `start_local.py`:
+To start the backend and frontend simultaneously, run the `start_local.py` script:
 
-```bash
+bash
 python start_local.py
-```
 
-O script irá:
-1.  Iniciar o servidor backend em `http://127.0.0.1:8000`.
-2.  Abrir a aplicação desktop (frontend).
+
+The script will:
+1.  Start the backend server at `http://127.0.0.1:8000`.
+2.  Launch the desktop application (frontend).
 
 ## 🐳 Docker
 
-O projeto também pode ser executado em um contêiner Docker. O `Dockerfile` presente na raiz do projeto contém as instruções para buildar a imagem.
-*Ainda a ser implementado em detalhe.* 
+The project can also be containerized using Docker. A `Dockerfile` is included in the root directory to build the necessary image.
+*Implementation details pending.*
